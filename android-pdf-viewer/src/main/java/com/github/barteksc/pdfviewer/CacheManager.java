@@ -16,7 +16,7 @@
 package com.github.barteksc.pdfviewer;
 
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.github.barteksc.pdfviewer.model.PagePart;
 
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
 import static com.github.barteksc.pdfviewer.util.Constants.Cache.CACHE_SIZE;
@@ -39,9 +40,8 @@ class CacheManager {
 
     private final Object passiveActiveLock = new Object();
 
-    private final PagePartComparator orderComparator = new PagePartComparator();
-
     public CacheManager() {
+        PagePartComparator orderComparator = new PagePartComparator();
         activeCache = new PriorityQueue<>(CACHE_SIZE, orderComparator);
         passiveCache = new PriorityQueue<>(CACHE_SIZE, orderComparator);
         thumbnails = new ArrayList<>();
@@ -69,12 +69,12 @@ class CacheManager {
             while ((activeCache.size() + passiveCache.size()) >= CACHE_SIZE &&
                     !passiveCache.isEmpty()) {
                 PagePart part = passiveCache.poll();
-                part.getRenderedBitmap().recycle();
+                Objects.requireNonNull(part).getRenderedBitmap().recycle();
             }
 
             while ((activeCache.size() + passiveCache.size()) >= CACHE_SIZE &&
                     !activeCache.isEmpty()) {
-                activeCache.poll().getRenderedBitmap().recycle();
+                Objects.requireNonNull(activeCache.poll()).getRenderedBitmap().recycle();
             }
         }
     }
@@ -179,7 +179,7 @@ class CacheManager {
         }
     }
 
-    class PagePartComparator implements Comparator<PagePart> {
+    static class PagePartComparator implements Comparator<PagePart> {
         @Override
         public int compare(PagePart part1, PagePart part2) {
             if (part1.getCacheOrder() == part2.getCacheOrder()) {

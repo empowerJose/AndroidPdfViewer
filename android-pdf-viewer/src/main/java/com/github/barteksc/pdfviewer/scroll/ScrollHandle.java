@@ -54,4 +54,6 @@ public interface ScrollHandle {
      * Hide handle after some time (defined by implementation)
      */
     void hideDelayed();
+
+    boolean onTouchEvent();
 }

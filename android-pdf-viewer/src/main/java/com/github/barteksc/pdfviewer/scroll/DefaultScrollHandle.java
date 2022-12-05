@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -25,17 +25,12 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
 
     protected TextView textView;
     protected Context context;
-    private boolean inverted;
+    private final boolean inverted;
     private PDFView pdfView;
     private float currentPos;
 
-    private Handler handler = new Handler();
-    private Runnable hidePageScrollerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    private final Handler handler = new Handler();
+    private final Runnable hidePageScrollerRunnable = this::hide;
 
     public DefaultScrollHandle(Context context) {
         this(context, false);
@@ -160,6 +155,11 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
     @Override
     public void hideDelayed() {
         handler.postDelayed(hidePageScrollerRunnable, 1000);
+    }
+
+    @Override
+    public boolean onTouchEvent() {
+        return false;
     }
 
     @Override
