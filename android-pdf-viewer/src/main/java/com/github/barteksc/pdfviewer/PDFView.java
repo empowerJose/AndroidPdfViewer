@@ -36,6 +36,11 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.NestedScrollingChild3;
+import androidx.core.view.NestedScrollingChildHelper;
+
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler;
 import com.github.barteksc.pdfviewer.link.LinkHandler;
@@ -91,7 +96,7 @@ import java.util.List;
  * using {@link #load(DocumentSource, String, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
-public class PDFView extends RelativeLayout {
+public class PDFView extends RelativeLayout implements NestedScrollingChild3 {
 
     private static final String TAG = PDFView.class.getSimpleName();
 
@@ -111,6 +116,10 @@ public class PDFView extends RelativeLayout {
     enum ScrollDir {
         NONE, START, END
     }
+
+    private NestedScrollingChildHelper mNestedChildHelper;
+
+    private Boolean isNested = false;
 
     private ScrollDir scrollDir = ScrollDir.NONE;
 
@@ -262,6 +271,9 @@ public class PDFView extends RelativeLayout {
 
         pdfiumCore = new PdfiumCore(context);
         setWillNotDraw(false);
+
+        mNestedChildHelper = new NestedScrollingChildHelper(this);
+        setNestedScrollingEnabled(isNested);
     }
 
     private void load(DocumentSource docSource, String password) {
@@ -1560,4 +1572,41 @@ public class PDFView extends RelativeLayout {
             }
         }
     }
+
+    //region NestedScrollingChild
+    @Override
+    public void dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow, int type, @NonNull int[] consumed) {
+        mNestedChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes, int type) {
+        return mNestedChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll(int type) {
+        mNestedChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent(int type) {
+        return mNestedChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow, int type) {
+        return mNestedChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow, int type) {
+        return mNestedChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    public void setNestedScrolling(boolean enabled) {
+        this.isNested = enabled;
+        setNestedScrollingEnabled(enabled);
+    }
+    //endregion
 }
